@@ -13,13 +13,13 @@ public class Tooth {
         length = len;
         width = wid;
         angle = ang;
-        double x1 = 0;
+        double x1 = -1.0*width/2.0;
         double y1 = 0;
-        double x2 = 0.6*width/2.0;
+        double x2 = -0.3*width/2.0;
         double y2 = 0;
-        double x3 = 0.3*width/2.0;
+        double x3 = -0.6*width/2.0;
         double y3 = length;
-        double x4 = width/2.0;
+        double x4 = 0;
         double y4 = length;
         spline = new Spline(x1, y1, x2, y2, x3, y3, x4, y4);
     }
@@ -46,16 +46,15 @@ public class Tooth {
     
     // changes the tooth based on the new angle
     public void setAng(double ang, double rad) {
-        double numTeeth = 2*Math.PI/ang;
-        width = 2*Math.PI*rad/numTeeth;
+        width = ang*rad;
         angle = ang;
-        double x1 = 0;
+        double x1 = -1.0*width/2.0;
         double y1 = 0;
-        double x2 = 0.6*width/2.0;
+        double x2 = -0.3*width/2.0;
         double y2 = 0;
-        double x3 = 0.3*width/2.0;
+        double x3 = -0.6*width/2.0;
         double y3 = length;
-        double x4 = width/2.0;
+        double x4 = 0;
         double y4 = length;
         spline = new Spline(x1, y1, x2, y2, x3, y3, x4, y4);
     }

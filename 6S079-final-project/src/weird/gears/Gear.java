@@ -17,4 +17,7 @@ public abstract class Gear {
     
     // gets the number of teeth
     public abstract int getNumTeeth();
+    
+    // gets the radius if there is one
+    public abstract double getRadius();
 }

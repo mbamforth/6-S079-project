@@ -47,9 +47,9 @@ public class GUIWindow extends JPanel {
     static final int ANG_MAX = 90;
     static final int ANG_SPACING = 8;
     static int INITIAL_ANG = 30;
-    static final int RAD_MIN = 0;
-    static final int RAD_MAX = 100;
-    static final int RAD_SPACING = 10;
+    static final int RAD_MIN = 1;
+    static final int RAD_MAX = 50;
+    static final int RAD_SPACING = 5;
     static final int INITIAL_RAD = 10;
 
     public GUIWindow() {
@@ -81,7 +81,7 @@ public class GUIWindow extends JPanel {
             public void stateChanged(ChangeEvent event) {
                 double val = (double) radSlider.getValue();
                 model.getUnfixedGear().radiusScale(val);
-                // repaint here?
+                renderingPanel.repaint();
             }
         });
         
@@ -99,8 +99,10 @@ public class GUIWindow extends JPanel {
         toothAngSlider.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent event) {
                 // print some things here to see if it is working
-                double val = (double) radSlider.getValue()*2*Math.PI/360;
+                double result = (double) radSlider.getValue();
+                double val = result*Math.PI/180.0;
                 model.getUnfixedGear().toothScale(val);
+                renderingPanel.repaint();
             }
         });
         
@@ -125,6 +127,7 @@ public class GUIWindow extends JPanel {
         renderingPanel.setPreferredSize(new Dimension(500,400));
         renderingPanel.setOpaque(true);
         renderingPanel.setBackground(Color.white);
+        //renderingPanel.setLayout(new GridLayout(200, 200, 1, 1));
         
         // set up the gear panel
         gearPanel.setLayout(new BoxLayout(gearPanel, BoxLayout.PAGE_AXIS));
@@ -160,7 +163,7 @@ public class GUIWindow extends JPanel {
         add(gearPanel);
         add(sliderPanel);
         
-        // TODO: add user input here, reset the sliders to the right values, paint the model
+        // TODO: add user input here, reset the sliders to the right values
         
     }
 }
@@ -169,60 +172,80 @@ public class GUIWindow extends JPanel {
 class RenderPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     GearSet model;
+    double scale;
     
     public RenderPanel(GearSet mo) {
         model = mo;
+        scale = 5.0;
     }
     
     // helps draw the splines
     @Override
     public void paintComponent (Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        super.paintComponent(g);
         g2.setBackground(Color.WHITE);
         g2.setColor(Color.BLACK);
-        
+        /**
         
         // draws the fixed gear
         double[][] points = model.getFixedGear().getTooth().getToothSpline().getPoints();
-        double scale = 8.0;
-        double xOff = 155.0;
-        double yOff = 77.0;
-        CubicCurve2D.Double c = new CubicCurve2D.Double(scale*points[0][0] + xOff, scale*points[0][1] + yOff, 
-                scale*points[1][0] + xOff, scale*points[1][1] + yOff, 
-                scale*points[2][0] + xOff, scale*points[2][1] + yOff, 
-                scale*points[3][0] + xOff, scale*points[3][1] + yOff);
-        CubicCurve2D.Double cRef = new CubicCurve2D.Double(-1.0*scale*points[0][0] + xOff, scale*points[0][1] + yOff, 
-                -1.0*scale*points[1][0] + xOff, scale*points[1][1] + yOff, 
-                -1.0*scale*points[2][0] + xOff, scale*points[2][1] + yOff, 
-                -1.0*scale*points[3][0] + xOff, scale*points[3][1] + yOff);
-        g2.draw(c);
-        g2.draw(cRef);
-        for (int i = 0; i < model.getFixedGear().getNumTeeth() - 1; i++) {
-            g2.rotate(model.getFixedGear().getTooth().getAng(), 155.0, 127.0);
-            g2.draw(c);
-            g2.draw(cRef);
-        }
+        double xOff = 150.0;
+        double yOff = 200.0;
+        double rad = model.getFixedGear().getRadius();
+        double ang = model.getFixedGear().getTooth().getAng();
+        int numT = model.getFixedGear().getNumTeeth();
+        paintGear(g2, points, rad, ang, numT, xOff, yOff);
+        */
         
         // draws the unfixed gear
         g2.setColor(Color.BLUE);
         double[][] points2 = model.getUnfixedGear().getTooth().getToothSpline().getPoints();
-        double xOff2 = 237.0;
-        double yOff2 = 97.0;
-        CubicCurve2D.Double c2 = new CubicCurve2D.Double(scale*points2[0][0] + xOff2, scale*points2[0][1] + yOff2, 
-                scale*points2[1][0] + xOff2, scale*points2[1][1] + yOff2, 
-                scale*points2[2][0] + xOff2, scale*points2[2][1] + yOff2, 
-                scale*points2[3][0] + xOff2, scale*points2[3][1] + yOff2);
-        CubicCurve2D.Double cRef2 = new CubicCurve2D.Double(-1.0*scale*points2[0][0] + xOff2, scale*points2[0][1] + yOff2, 
-                -1.0*scale*points2[1][0] + xOff2, scale*points2[1][1] + yOff2, 
-                -1.0*scale*points2[2][0] + xOff2, scale*points2[2][1] + yOff2, 
-                -1.0*scale*points2[3][0] + xOff2, scale*points2[3][1] + yOff2);
-        g2.draw(c2);
-        g2.draw(cRef2);
-        for (int j = 0; j < model.getUnfixedGear().getNumTeeth() - 1; j++) {
-            g2.rotate(model.getUnfixedGear().getTooth().getAng(), 237.0, 139.0);
-            g2.draw(c2);
-            g2.draw(cRef2);
-        }
+        double xOff2 = 300.0;
+        double yOff2 = 200.0;
+        double rad2 = model.getUnfixedGear().getRadius();
+        double ang2 = model.getUnfixedGear().getTooth().getAng();
+        int numT2 = model.getUnfixedGear().getNumTeeth();
+        System.out.println("tooth width: " + model.getUnfixedGear().getTooth().getWidth());
+        System.out.println("radius: " + rad2);
+        System.out.println("angle per tooth: " + ang2);
+        System.out.println("number of teeth: " + numT2);
+        paintGear(g2, points2, rad2, ang2, numT2, xOff2, yOff2);
+
+    }
+    
+    /** Paints a gear given: 
+    *   The current Graphics2D object
+    *   The points list of the gear's Tooth
+    */
+    public void paintGear(Graphics2D g2, double[][] points, double rad, double ang, int numT, double xOff, double yOff) {
         
+        CubicCurve2D.Double c = new CubicCurve2D.Double(
+                scale*points[0][0], scale*points[0][1] + scale*rad, 
+                scale*points[1][0], scale*points[1][1] + scale*rad, 
+                scale*points[2][0], scale*points[2][1] + scale*rad, 
+                scale*points[3][0], scale*points[3][1] + scale*rad);
+        CubicCurve2D.Double cRef = new CubicCurve2D.Double(
+                -1.0*scale*points[0][0], scale*points[0][1] + scale*rad, 
+                -1.0*scale*points[1][0], scale*points[1][1] + scale*rad, 
+                -1.0*scale*points[2][0], scale*points[2][1] + scale*rad, 
+                -1.0*scale*points[3][0], scale*points[3][1] + scale*rad);
+        g2.translate(xOff, yOff);
+        g2.draw(c);
+        g2.draw(cRef);
+        
+        CubicCurve2D.Double line = new CubicCurve2D.Double(
+                0, 0, 
+                0, 10, 
+                0, 20, 
+                0, scale*rad);
+        g2.draw(line);
+        for (int i = 0; i < numT - 1; i++) {
+            g2.rotate(ang);
+            g2.draw(c);
+            g2.draw(cRef);
+        }
+        g2.rotate(ang);
+        g2.translate(-xOff, -yOff);
     }
 }

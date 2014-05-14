@@ -13,8 +13,12 @@ public class RoundGear extends Gear {
         originX = 0.0;
         originY = 0.0;
         radius = 10.0;
-        tooth = new Tooth(2.0, 2.5, 0.2);
-        numTeeth = (int) (2*Math.PI/tooth.getAng());
+        double toothLen = 2.0;
+        tooth = new Tooth(toothLen, 2.5, 0.2);
+        numTeeth = (int) (2.0*Math.PI/tooth.getAng());
+        double toothWidth = 2.0*Math.PI*radius/(double)numTeeth;
+        double toothAng = 2.0*Math.PI/(double)numTeeth;
+        tooth = new Tooth(toothLen, toothWidth, toothAng);
     }
     
     // Constructor with pre-made Tooth
@@ -22,8 +26,10 @@ public class RoundGear extends Gear {
         originX = x;
         originY = y;
         radius = rad;
-        tooth = t;
-        numTeeth = (int) (2*Math.PI/tooth.getAng());
+        numTeeth = (int) (2.0*Math.PI/t.getAng());
+        double toothWidth = 2.0*Math.PI*radius/(double)numTeeth;
+        double toothAng = 2.0*Math.PI/(double)numTeeth;
+        tooth = new Tooth(t.getLen(), toothWidth, toothAng);
     }
     
     // Constructor with # teeth
@@ -32,9 +38,9 @@ public class RoundGear extends Gear {
         originY = y;
         radius = rad;
         numTeeth = teeth;
-        double toothLen = (radius / 5.0);
-        double toothAng = 2*Math.PI/teeth;
-        double toothWidth = 2*Math.PI*radius/teeth;
+        double toothLen = (radius / 4.0);
+        double toothAng = 2.0*Math.PI/(double)teeth;
+        double toothWidth = 2.0*Math.PI*radius/(double)teeth;
         tooth = new Tooth(toothLen, toothWidth, toothAng);
     }
     
@@ -60,6 +66,12 @@ public class RoundGear extends Gear {
         return tooth;
     }   
     
+    // Gets the tooth
+    @Override
+    public double getRadius() {
+        return radius;
+    }  
+    
     // returns the number of teeth
     public int getNumTeeth() {
         return numTeeth;
@@ -73,6 +85,10 @@ public class RoundGear extends Gear {
         double circum = radius*2*Math.PI;
         double teeth = circum/toothWidth;
         numTeeth = (int) teeth;
+        double desiredCirc = (double)numTeeth*toothWidth;
+        radius = desiredCirc/(2*Math.PI);
+        double toothAng = 2.0*Math.PI*toothWidth/desiredCirc;
+        tooth = new Tooth(tooth.getLen(), toothWidth, toothAng);
         return true;
     }
     

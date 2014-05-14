@@ -44,6 +44,12 @@ public class RingGear extends Gear {
         return innerTooth;
     }   
     
+    // Gets the tooth
+    @Override
+    public double getRadius() {
+        return radius;
+    }  
+    
     // Sets the outer tooth
     public void setOuterTooth(Tooth t) {
         outerTooth = t;

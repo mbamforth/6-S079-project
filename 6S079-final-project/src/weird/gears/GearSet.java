@@ -17,9 +17,12 @@ public class GearSet {
             gearList.add(fixed);
             gearList.add(unfixed);
         } else if (set == 1) {
-            Tooth tooth = new Tooth(2.0, 2.0, .5);
-            Gear fixed = new RoundGear(0.0, 0.0, 25.0, 12);
-            Gear unfixed = new RoundGear(23.0, 0.0, 15.0, tooth);
+            Tooth tooth = new Tooth(15.0, 2.0, .5);
+            Tooth otherTooth = new Tooth(5.0, 1.0, .3);
+            Gear fixed = new RoundGear(0.0, 0.0, 10.0, otherTooth);
+            Gear unfixed = new RoundGear(0.0, 0.0, 25.0, tooth);
+            System.out.println("ac ");
+            System.out.println(otherTooth.getToothSpline() == tooth.getToothSpline());
             gearList.add(fixed);
             gearList.add(unfixed);
         } else {

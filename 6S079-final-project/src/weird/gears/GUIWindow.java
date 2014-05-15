@@ -23,6 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
 
@@ -31,6 +32,7 @@ public class GUIWindow extends JPanel {
     private static final long serialVersionUID = 1L;
     
     private GearSet model;
+    private final JScrollPane scrollPane;
     private final JLabel weirdGearsLabel;
     private final JTextArea weirdGearsInfo;
     private final JSlider radSlider;
@@ -38,6 +40,8 @@ public class GUIWindow extends JPanel {
     private final JSlider toothAngSlider;
     private final JLabel toothAngSliderText;
     private final JLabel toothAngSliderInfo;
+    private final JSlider toothLenSlider;
+    private final JLabel toothLenSliderText;
     //private final JLabel gearLabel;
     private final JPanel sliderPanel;
     private final JPanel gearPanel;
@@ -46,17 +50,22 @@ public class GUIWindow extends JPanel {
     static final int ANG_MIN = 2;
     static final int ANG_MAX = 90;
     static final int ANG_SPACING = 8;
-    static int INITIAL_ANG = 30;
     static final int RAD_MIN = 1;
     static final int RAD_MAX = 50;
     static final int RAD_SPACING = 5;
-    static final int INITIAL_RAD = 10;
+    static final int LEN_MIN = 1;
+    static final int LEN_MAX = 15;
+    static final int LEN_SPACING = 1;
 
     public GUIWindow() {
         // sets up the model (0 is 2 circular uniform gears)
         model = new GearSet(1);
         
         // create components
+        scrollPane = new JScrollPane();
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
         weirdGearsLabel = new JLabel("Welcome to Weird Gears!");
         weirdGearsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
@@ -71,7 +80,7 @@ public class GUIWindow extends JPanel {
         weirdGearsInfo.setLineWrap(true);
         weirdGearsInfo.setMaximumSize(new Dimension(370,80));
         
-        radSlider = new JSlider(RAD_MIN, RAD_MAX, INITIAL_RAD);
+        radSlider = new JSlider(RAD_MIN, RAD_MAX, (int) model.getUnfixedGear().getRadius());
         radSlider.setMajorTickSpacing(RAD_SPACING);
         radSlider.setPaintLabels(true);
         radSlider.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -89,7 +98,7 @@ public class GUIWindow extends JPanel {
         radSliderText = new JLabel("Slide to change the radius");
         radSliderText.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        INITIAL_ANG = (int) (model.getFixedGear().getTooth().getAng()*180.0/Math.PI);
+        int INITIAL_ANG = (int) (model.getFixedGear().getTooth().getAng()*180.0/Math.PI);
         toothAngSlider = new JSlider(ANG_MIN, ANG_MAX, INITIAL_ANG);
         toothAngSlider.setMajorTickSpacing(ANG_SPACING);
         toothAngSlider.setPaintLabels(true);
@@ -106,20 +115,38 @@ public class GUIWindow extends JPanel {
             }
         });
         
-        
         toothAngSliderText = new JLabel("Slide to change the angle taken by each tooth (in degrees)");
         toothAngSliderText.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         toothAngSliderInfo = new JLabel("The angle of a tooth is inversely proportional to the number of teeth");
         toothAngSliderInfo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
+        // make the tooth length slider
+        toothLenSlider = new JSlider(LEN_MIN, LEN_MAX, (int) model.getUnfixedGear().getTooth().getLen());
+        toothLenSlider.setMajorTickSpacing(LEN_SPACING);
+        toothLenSlider.setPaintLabels(true);
+        toothLenSlider.setAlignmentX(Component.CENTER_ALIGNMENT);
+        toothLenSlider.setMaximumSize(new Dimension(370,30));
+        
+        toothLenSlider.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent event) {
+                double val = (double) toothLenSlider.getValue();
+                model.getUnfixedGear().getTooth().setLen(val);
+                renderingPanel.repaint();
+            }
+        });
+        
+        toothLenSliderText = new JLabel("Slide to change the length of each tooth");
+        toothLenSliderText.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // create the panels
         sliderPanel = new JPanel();
         gearPanel = new JPanel();
         renderingPanel = new RenderPanel(model);
         
         // lays out the main panel
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        setPreferredSize(new Dimension(900,400));
+        setPreferredSize(new Dimension(950,400));
         setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.white));
         
         // set up rendering panel 
@@ -137,13 +164,16 @@ public class GUIWindow extends JPanel {
         //gearPanel.add(gearLabel);
         gearPanel.add(renderingPanel);
 
-        // set up the slider panel
+        // set up the slider panel with scroller
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
         sliderPanel.setPreferredSize(new Dimension(400,400));
-        sliderPanel.setMaximumSize(new Dimension(400,400));
+        sliderPanel.setMaximumSize(new Dimension(400,800));
         sliderPanel.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.blue));
+        scrollPane.setPreferredSize(new Dimension(450,400));
+        scrollPane.setMaximumSize(new Dimension(450,800));
         
         // add things to the slider panel
+        scrollPane.setViewportView(sliderPanel);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         sliderPanel.add(weirdGearsLabel);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -157,11 +187,15 @@ public class GUIWindow extends JPanel {
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
         sliderPanel.add(toothAngSliderText);
         sliderPanel.add(toothAngSliderInfo);
+        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        sliderPanel.add(toothLenSlider);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        sliderPanel.add(toothLenSliderText);
+        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         
         // set up the root panel
         add(gearPanel);
-        add(sliderPanel);
+        add(scrollPane);
         
         // TODO: add user input here, reset the sliders to the right values
         
@@ -186,7 +220,7 @@ class RenderPanel extends JPanel {
         super.paintComponent(g);
         g2.setBackground(Color.WHITE);
         g2.setColor(Color.BLACK);
-        /**
+        
         
         // draws the fixed gear
         double[][] points = model.getFixedGear().getTooth().getToothSpline().getPoints();
@@ -196,7 +230,7 @@ class RenderPanel extends JPanel {
         double ang = model.getFixedGear().getTooth().getAng();
         int numT = model.getFixedGear().getNumTeeth();
         paintGear(g2, points, rad, ang, numT, xOff, yOff);
-        */
+        
         
         // draws the unfixed gear
         g2.setColor(Color.BLUE);
@@ -206,10 +240,11 @@ class RenderPanel extends JPanel {
         double rad2 = model.getUnfixedGear().getRadius();
         double ang2 = model.getUnfixedGear().getTooth().getAng();
         int numT2 = model.getUnfixedGear().getNumTeeth();
-        System.out.println("tooth width: " + model.getUnfixedGear().getTooth().getWidth());
-        System.out.println("radius: " + rad2);
-        System.out.println("angle per tooth: " + ang2);
-        System.out.println("number of teeth: " + numT2);
+        //System.out.println("tooth width: " + model.getUnfixedGear().getTooth().getWidth());
+        //System.out.println("radius: " + rad2);
+        //System.out.println("angle per tooth: " + ang2*180.0/Math.PI);
+        //System.out.println("number of teeth: " + numT2);
+        System.out.println(points == points2);
         paintGear(g2, points2, rad2, ang2, numT2, xOff2, yOff2);
 
     }

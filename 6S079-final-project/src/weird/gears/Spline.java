@@ -2,7 +2,7 @@ package weird.gears;
 
 // spline object
 public class Spline {
-    public static double[][] points;
+    private double[][] points;
     public static final double[][] bSplineCoefficients = {{-1./6 ,  3./6 , -3./6 , 1./6 },
                                                     { 3./6 , -6./6 ,  3./6 , 0.   },
                                                     {-3./6 ,  0.   ,  3./6 , 0.   },

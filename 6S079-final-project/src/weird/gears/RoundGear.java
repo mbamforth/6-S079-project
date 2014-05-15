@@ -97,7 +97,7 @@ public class RoundGear extends Gear {
         double toothWidth = tooth.getWidth();
         double circum = radius*2.0*Math.PI;
         double teeth = circum/toothWidth;
-        numTeeth = (int) teeth;
+        numTeeth = (int) Math.round(teeth);
         double desiredCirc = (double)numTeeth*toothWidth;
         radius = desiredCirc/(2*Math.PI);
         double toothAng = 2.0*Math.PI*toothWidth/desiredCirc;
@@ -108,7 +108,7 @@ public class RoundGear extends Gear {
     // Scales based on the tooth
     public boolean toothScale(double ang) {
         // change teeth as necessary
-        numTeeth = (int) (2*Math.PI/ang);
+        numTeeth = (int) Math.round((2*Math.PI/ang));
         double angle = 2*Math.PI/(double)numTeeth;
         double circ = 2.0*Math.PI*radius;
         double wid = circ/(double)numTeeth;

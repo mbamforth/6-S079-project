@@ -114,5 +114,10 @@ public class RoundGear extends Gear {
         double wid = circ/(double)numTeeth;
         tooth.setAng(tooth.getLen(), wid, angle);     
         return true;
+    }
+
+    @Override
+    public double getThickness() {
+        return 0.0;
     } 
 }

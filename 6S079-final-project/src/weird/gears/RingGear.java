@@ -6,20 +6,17 @@ public class RingGear extends Gear {
     double originY;
     double radius;
     double thickness;
-    Tooth innerTooth;
-    Tooth outerTooth;
-    boolean hasOuterTeeth;
+    int numTeeth;
+    Tooth tooth;
     
     // Constructor
-    public RingGear (double x, double y, double rad, double thick, Tooth innerT, 
-            Tooth outerT, boolean hasOuterT) {
+    public RingGear (double x, double y, double rad, double thick, Tooth innerT) {
         originX = x;
         originY = y;
         radius = rad;
         thickness = thick;
-        innerTooth = innerT;
-        outerTooth = outerT;
-        hasOuterTeeth = hasOuterT;
+        tooth = innerT;
+        numTeeth = (int) (2.0*Math.PI/tooth.getAng());
     }
     
     // Sets the origin
@@ -34,14 +31,14 @@ public class RingGear extends Gear {
     }
     
     // Sets the inner tooth
-    public void setInnerTooth(Tooth t) {
-        innerTooth = t;
+    public void setTooth(Tooth t) {
+        tooth = t;
     }
     
     // Gets the (inner) tooth
     @Override
     public Tooth getTooth() {
-        return innerTooth;
+        return tooth;
     }   
     
     // Gets the x
@@ -61,11 +58,7 @@ public class RingGear extends Gear {
     public double getRadius() {
         return radius;
     }  
-    
-    // Sets the outer tooth
-    public void setOuterTooth(Tooth t) {
-        outerTooth = t;
-    }
+
     
     // Scales based on the radius
     public boolean radiusScale(double newRad) {
@@ -74,19 +67,6 @@ public class RingGear extends Gear {
         return true;
     }
     
-    // Scales based on the radius
-    public boolean innerToothScale(Tooth t) {
-        // change teeth as necessary
-        
-        return true;
-    }   
-    
-    // Scales based on the radius
-    public boolean outerToothScale(Tooth t) {
-        // change teeth as necessary
-        
-        return true;
-    }   
     
     // scales the inner teeth
     public boolean toothScale(double ang) {
@@ -97,19 +77,23 @@ public class RingGear extends Gear {
 
     @Override
     public int getNumTeeth() {
-        // TODO Auto-generated method stub
-        return 0;
+        return numTeeth;
     }
 
     @Override
     public void setOrigin(double x, double y) {
-        // TODO Auto-generated method stub
-        
+        originX = x;
+        originY = y;
     }
 
     @Override
     public void setRadius(double rad) {
-        // TODO Auto-generated method stub
+        radius = rad;
         
+    }
+
+    @Override
+    public double getThickness() {
+        return thickness;
     }
 }

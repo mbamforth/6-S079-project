@@ -25,6 +25,8 @@ public abstract class Gear {
     public abstract double getX();
     // gets the y origin if there is one
     public abstract double getY();
+    // gets the thickness origin if there is one
+    public abstract double getThickness();
     // sets the origin
     public abstract void setOrigin(double x, double y);
     // sets the radius

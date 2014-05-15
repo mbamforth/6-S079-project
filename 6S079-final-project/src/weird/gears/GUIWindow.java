@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,6 +16,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import java.awt.geom.CubicCurve2D;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -67,6 +69,8 @@ public class GUIWindow extends JPanel {
     private final JPanel userInput;
     private final JButton fitToGear;
     private final JButton addGearButton;
+    private final JButton addRingGearButton;
+    private boolean hasRing;
     
     // components for extra gears
     // components for third gear
@@ -114,6 +118,7 @@ public class GUIWindow extends JPanel {
     private JSlider rotationSlider4;
     private JLabel rotationSliderLabel4;
     
+    // constants
     static final int ANG_MIN = 2;
     static final int ANG_MAX = 62;
     static final int ANG_SPACING = 5;
@@ -133,10 +138,12 @@ public class GUIWindow extends JPanel {
     static final int ROT_MAX = 360;
     static final int ROT_SPACING = 30;
 
+    
     public GUIWindow() {
         // sets up the model
         gearSetType = 1;
-        model = new GearSet(1);
+        model = new GearSet(gearSetType);
+        hasRing = false;
         
         // create the components
         
@@ -231,8 +238,14 @@ public class GUIWindow extends JPanel {
                 double len = model.getFixedGear().getTooth().getLen();
                 double ang = model.getFixedGear().getTooth().getAng();
                 double wid = ang*model.getFixedGear().getRadius();
+                
                 model.getUnfixedGear().getTooth().setAng(len, wid, ang);
                 model.getUnfixedGear().radiusScale(model.getUnfixedGear().getRadius());
+                
+                for (int j = 2; j < model.getNumGears(); j++) {
+                    model.getNthGear(j).getTooth().setAng(len, wid, ang);
+                    model.getNthGear(j).radiusScale(model.getNthGear(j).getRadius());
+                }
                 renderingPanel.repaint();
             }
         });
@@ -365,6 +378,13 @@ public class GUIWindow extends JPanel {
         yPosSliderLabel.setForeground(Color.BLUE);
         rotationSliderLabel.setForeground(Color.BLUE);
         
+        //////////////////////////////////////////////////////////////////////////////
+        // end of basic components                                                  //
+        //                                                                          //
+        // beginning of multiple gear section                                       //
+        //////////////////////////////////////////////////////////////////////////////
+        
+        
         addGearButton = new JButton("Click here to add another gear");
         addGearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         addGearButton.addActionListener(new ActionListener() {
@@ -372,7 +392,7 @@ public class GUIWindow extends JPanel {
                 if (model.getNumGears() > 4) {
                     // do nothing
                 } else {
-                    Gear g = new RoundGear();
+                    Gear g = new RoundGear(30, 30, 10, new Tooth(2.0, 2.5, 0.2));
                     model.addGear(g);
                     // add new sliders here
                     if (model.getNumGears() == 5) {
@@ -839,10 +859,183 @@ public class GUIWindow extends JPanel {
         });
         
         
+        // just like addGearButton but for ring gears. there can only be 0 or 1
+        addRingGearButton = new JButton("Click here to add an outer ring gear");
+        addRingGearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        addRingGearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (hasRing) {
+                    // do nothing
+                } else if (model.getNumGears() < 5) {
+                    Gear g = new RingGear(50, 50, 30, 5, new Tooth(2.0, 2.5, 0.2));
+                    model.addGear(g);
+                    addRingGearButton.setText("You are at the maximum number of gears");
+                    final int n = model.getNumGears() - 1;
+                        
+                    radSlider4 = new JSlider(RAD_MIN, RAD_MAX, (int) model.getNthGear(n).getRadius());
+                    radSlider4.setMajorTickSpacing(RAD_SPACING);
+                    radSlider4.setPaintLabels(true);
+                    radSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    radSlider4.setMaximumSize(new Dimension(370,30));
+                    radSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double) radSlider4.getValue();
+                            model.getNthGear(n).radiusScale(val);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    radSliderText4 = new JLabel("Slide to change the radius");
+                    radSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                    int INITIAL_ANG = (int) (model.getNthGear(n).getTooth().getAng()*180.0/Math.PI);
+                    toothAngSlider4 = new JSlider(ANG_MIN, ANG_MAX, INITIAL_ANG);
+                    toothAngSlider4.setMajorTickSpacing(ANG_SPACING);
+                    toothAngSlider4.setPaintLabels(true);
+                    toothAngSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    toothAngSlider4.setMaximumSize(new Dimension(370,30));
+                    toothAngSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double result = (double) toothAngSlider4.getValue();
+                            double ang = result*Math.PI/180.0;
+                            double len = model.getNthGear(n).getTooth().getLen();
+                            double rad = model.getNthGear(n).getRadius();
+                            double wid = ang*rad;
+                            model.getNthGear(n).getTooth().setAng(len, wid, ang);
+                            model.getNthGear(n).radiusScale(rad);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    toothAngSliderText4 = new JLabel("Slide to change the angle taken by each tooth (in degrees)");
+                    toothAngSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    
+                    toothAngSliderInfo4 = new JLabel("The angle of a tooth is inversely proportional to the number of teeth");
+                    toothAngSliderInfo4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                    toothLenSlider4 = new JSlider(LEN_MIN, LEN_MAX, (int) model.getNthGear(n).getTooth().getLen());
+                    toothLenSlider4.setMajorTickSpacing(LEN_SPACING);
+                    toothLenSlider4.setPaintLabels(true);
+                    toothLenSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    toothLenSlider4.setMaximumSize(new Dimension(370,30));
+                    
+                    toothLenSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double) toothLenSlider4.getValue();
+                            model.getNthGear(n).getTooth().setLen(val);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    toothLenSliderText4 = new JLabel("Slide to change the length of each tooth");
+                    toothLenSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                    xPosSlider4 = new JSlider(X_MIN, X_MAX, (int) model.getNthGear(n).getX());
+                    xPosSlider4.setMajorTickSpacing(X_SPACING);
+                    xPosSlider4.setPaintLabels(true);
+                    xPosSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    xPosSlider4.setMaximumSize(new Dimension(370,30));
+                    
+                    xPosSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double) xPosSlider4.getValue();
+                            model.getNthGear(n).setOrigin(val, model.getNthGear(n).getY());
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    xPosSliderLabel4 = new JLabel("Slide to change the X coordinate of the gear's center");
+                    xPosSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                    // y slider
+                    yPosSlider4 = new JSlider(Y_MIN, Y_MAX, (int) model.getNthGear(n).getY());
+                    yPosSlider4.setMajorTickSpacing(Y_SPACING);
+                    yPosSlider4.setPaintLabels(true);
+                    yPosSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    yPosSlider4.setMaximumSize(new Dimension(370,30));
+                    
+                    yPosSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double) yPosSlider4.getValue();
+                            model.getNthGear(n).setOrigin(model.getNthGear(n).getX(), val);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    yPosSliderLabel4 = new JLabel("Slide to change the Y coordinate of the gear's center");
+                    yPosSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                    // rotation slider
+                    rotationSlider4 = new JSlider(ROT_MIN, ROT_MAX, 0);
+                    rotationSlider4.setMajorTickSpacing(ROT_SPACING);
+                    rotationSlider4.setPaintLabels(true);
+                    rotationSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    rotationSlider4.setMaximumSize(new Dimension(370,30));
+                    
+                    rotationSlider4.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double)rotationSlider4.getValue();
+                            double result = val*Math.PI/180.0;
+                            renderingPanel.setRotation(result, n);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
+                    rotationSliderLabel4 = new JLabel("Slide to change the rotation of the gear");
+                    rotationSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                    ArrayList<Color> colors = new ArrayList<Color>(); 
+                    colors.add(Color.RED);
+                    colors.add(Color.GREEN);
+                    colors.add(Color.ORANGE);
+
+                    Color ringCol = colors.get(n - 2);
+                    // colors
+                    radSliderText4.setForeground(ringCol);
+                    toothAngSliderText4.setForeground(ringCol);
+                    toothAngSliderInfo4.setForeground(ringCol);
+                    toothLenSliderText4.setForeground(ringCol);
+                    xPosSliderLabel4.setForeground(ringCol);
+                    yPosSliderLabel4.setForeground(ringCol);
+                    rotationSliderLabel4.setForeground(ringCol);
+                        
+                    // add to panel
+                    sliderPanel.add(radSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(radSliderText4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.add(toothAngSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(toothAngSliderText4);
+                    sliderPanel.add(toothAngSliderInfo4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.add(toothLenSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(toothLenSliderText4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.add(xPosSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(xPosSliderLabel4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.add(yPosSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(yPosSliderLabel4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.add(rotationSlider4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                    sliderPanel.add(rotationSliderLabel4);
+                    sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                    sliderPanel.repaint();
+                } 
+                renderingPanel.repaint();
+            }
+        });
+        
         
         
         //////////////////////////////////////////////////////////////////////////////
-        // end of basic components                                                  //
+        // end of multiple gear section                                             //
         //                                                                          //
         // beginning of panels                                                      //
         //////////////////////////////////////////////////////////////////////////////
@@ -894,6 +1087,8 @@ public class GUIWindow extends JPanel {
         sliderPanel.add(fitToGear);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sliderPanel.add(addGearButton);
+        sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sliderPanel.add(addRingGearButton);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         sliderPanel.add(radSlider);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -983,15 +1178,25 @@ class RenderPanel extends JPanel {
             colors.add(Color.GREEN);
             colors.add(Color.ORANGE);
             for (int j = 2; j < model.getNumGears(); j++) {
-                // TODO: watch rotations with this
                 g2.setColor(colors.get(j-2));
-                double[][] points3 = model.getNthGear(j).getTooth().getToothSpline().getPoints();
-                double xOff3 = model.getNthGear(j).getX();
-                double yOff3 = model.getNthGear(j).getY();
-                double rad3 = model.getNthGear(j).getRadius();
-                double ang3 = model.getNthGear(j).getTooth().getAng();
-                int numT3 = model.getNthGear(j).getNumTeeth();
-                paintGear(g2, points3, rad3, ang3, numT3, xOff3, yOff3, j);
+                if (model.getNthGear(j) instanceof RoundGear) {
+                    double[][] points3 = model.getNthGear(j).getTooth().getToothSpline().getPoints();
+                    double xOff3 = model.getNthGear(j).getX();
+                    double yOff3 = model.getNthGear(j).getY();
+                    double rad3 = model.getNthGear(j).getRadius();
+                    double ang3 = model.getNthGear(j).getTooth().getAng();
+                    int numT3 = model.getNthGear(j).getNumTeeth();
+                    paintGear(g2, points3, rad3, ang3, numT3, xOff3, yOff3, j);
+                } else if (model.getNthGear(j) instanceof RingGear) {
+                    double[][] points3 = model.getNthGear(j).getTooth().getToothSpline().getPoints();
+                    double xOff3 = model.getNthGear(j).getX();
+                    double yOff3 = model.getNthGear(j).getY();
+                    double rad3 = model.getNthGear(j).getRadius();
+                    double ang3 = model.getNthGear(j).getTooth().getAng();
+                    int numT3 = model.getNthGear(j).getNumTeeth();
+                    double thick = model.getNthGear(j).getThickness();
+                    paintRingGear(g2, points3, rad3, ang3, numT3, thick, xOff3, yOff3, j);
+                }
             }
         }
     }
@@ -1025,6 +1230,50 @@ class RenderPanel extends JPanel {
                 0, 20, 
                 0, scale*rad);
         g2.draw(line);
+        
+        // rotates, drawing splines
+        for (int i = 0; i < numT - 1; i++) {
+            g2.rotate(ang);
+            g2.draw(c);
+            g2.draw(cRef);
+        }
+        
+        // reset g2 to the original rotation and offset for future drawing
+        g2.rotate(ang);
+        g2.rotate(-1.0*currentRotation[gear]);
+        
+        g2.translate(-1.0*scale*xOff, -1.0*scale*yOff);
+    }
+    
+    // paints a ring gear
+    public void paintRingGear(Graphics2D g2, double[][] points, double rad, double ang, int numT, double thickness, double xOff, double yOff, int gear) {
+        // creates the spline and its mirror
+        CubicCurve2D.Double c = new CubicCurve2D.Double(
+                scale*points[0][0], -1.0*scale*points[0][1] + scale*rad, 
+                scale*points[1][0], -1.0*scale*points[1][1] + scale*rad, 
+                scale*points[2][0], -1.0*scale*points[2][1] + scale*rad, 
+                scale*points[3][0], -1.0*scale*points[3][1] + scale*rad);
+        CubicCurve2D.Double cRef = new CubicCurve2D.Double(
+                -1.0*scale*points[0][0], -1.0*scale*points[0][1] + scale*rad, 
+                -1.0*scale*points[1][0], -1.0*scale*points[1][1] + scale*rad, 
+                -1.0*scale*points[2][0], -1.0*scale*points[2][1] + scale*rad, 
+                -1.0*scale*points[3][0], -1.0*scale*points[3][1] + scale*rad);
+        g2.translate(scale*xOff, scale*yOff);
+        g2.rotate(currentRotation[gear]);
+        
+        g2.draw(c);
+        g2.draw(cRef);
+        
+        // creates a line with the length of the radius for debugging
+        CubicCurve2D.Double line = new CubicCurve2D.Double(
+                0, 0, 
+                0, 10, 
+                0, 20, 
+                0, scale*rad);
+        g2.draw(line);
+        double outerRad = rad + thickness;
+        Shape cir = new Ellipse2D.Double(-1.0*scale*outerRad, -1.0*scale*outerRad, 2.0*scale*outerRad, 2.0*scale*outerRad);
+        g2.draw(cir);
         
         // rotates, drawing splines
         for (int i = 0; i < numT - 1; i++) {

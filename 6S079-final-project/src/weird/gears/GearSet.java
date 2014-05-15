@@ -6,7 +6,7 @@ public class GearSet {
     private ArrayList<Gear> gearList = new ArrayList<Gear>();
     
     // sets up some preset gear sets
-    // @set if 0: 2 round gears
+    // @set if 1: 2 round gears
     //      if 1:
     //      if 2:
     public GearSet(int type) {
@@ -46,7 +46,21 @@ public class GearSet {
         return gearList.get(1);
     }
     
+    // adds a gear to the set
+    public void addGear(Gear g) {
+        gearList.add(g);
+    }
+    
+    // returns how many gears are in the set
     public int getNumGears() {
         return gearList.size();
+    }
+    
+    // returns the nth gear in the set
+    public Gear getNthGear(int n) {
+        if (n >= 0 && n < gearList.size()) {
+            return gearList.get(n);
+        }
+        return null;
     }
 }

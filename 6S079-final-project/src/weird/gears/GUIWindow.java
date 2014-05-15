@@ -15,6 +15,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import java.awt.geom.CubicCurve2D;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -67,9 +68,55 @@ public class GUIWindow extends JPanel {
     private final JButton fitToGear;
     private final JButton addGearButton;
     
+    // components for extra gears
+    // components for third gear
+    private JSlider radSlider2;
+    private JLabel radSliderText2;
+    private JSlider toothAngSlider2;
+    private JLabel toothAngSliderText2;
+    private JLabel toothAngSliderInfo2;
+    private JSlider toothLenSlider2;
+    private JLabel toothLenSliderText2;
+    private JSlider xPosSlider2;
+    private JLabel xPosSliderLabel2;
+    private JSlider yPosSlider2;
+    private JLabel yPosSliderLabel2;
+    private JSlider rotationSlider2;
+    private JLabel rotationSliderLabel2;
+    
+    // components for fourth gear
+    private JSlider radSlider3;
+    private JLabel radSliderText3;
+    private JSlider toothAngSlider3;
+    private JLabel toothAngSliderText3;
+    private JLabel toothAngSliderInfo3;
+    private JSlider toothLenSlider3;
+    private JLabel toothLenSliderText3;
+    private JSlider xPosSlider3;
+    private JLabel xPosSliderLabel3;
+    private JSlider yPosSlider3;
+    private JLabel yPosSliderLabel3;
+    private JSlider rotationSlider3;
+    private JLabel rotationSliderLabel3;
+    
+    // components for fifth gear
+    private JSlider radSlider4;
+    private JLabel radSliderText4;
+    private JSlider toothAngSlider4;
+    private JLabel toothAngSliderText4;
+    private JLabel toothAngSliderInfo4;
+    private JSlider toothLenSlider4;
+    private JLabel toothLenSliderText4;
+    private JSlider xPosSlider4;
+    private JLabel xPosSliderLabel4;
+    private JSlider yPosSlider4;
+    private JLabel yPosSliderLabel4;
+    private JSlider rotationSlider4;
+    private JLabel rotationSliderLabel4;
+    
     static final int ANG_MIN = 2;
-    static final int ANG_MAX = 90;
-    static final int ANG_SPACING = 8;
+    static final int ANG_MAX = 62;
+    static final int ANG_SPACING = 5;
     static final int RAD_MIN = 1;
     static final int RAD_MAX = 50;
     static final int RAD_SPACING = 5;
@@ -301,7 +348,7 @@ public class GUIWindow extends JPanel {
             public void stateChanged(ChangeEvent event) {
                 double val = (double)rotationSlider.getValue();
                 double result = val*Math.PI/180.0;
-                renderingPanel.setRotation(result);
+                renderingPanel.setRotation(result, 1);
                 renderingPanel.repaint();
             }
         });
@@ -309,13 +356,490 @@ public class GUIWindow extends JPanel {
         rotationSliderLabel = new JLabel("Slide to change the rotation of the gear");
         rotationSliderLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
+        // set everything to one color for UI reasons
+        radSliderText.setForeground(Color.BLUE);
+        toothAngSliderText.setForeground(Color.BLUE);
+        toothAngSliderInfo.setForeground(Color.BLUE);
+        toothLenSliderText.setForeground(Color.BLUE);
+        xPosSliderLabel.setForeground(Color.BLUE);
+        yPosSliderLabel.setForeground(Color.BLUE);
+        rotationSliderLabel.setForeground(Color.BLUE);
+        
         addGearButton = new JButton("Click here to add another gear");
         addGearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         addGearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // add another gear
+                if (model.getNumGears() > 4) {
+                    // do nothing
+                } else {
+                    Gear g = new RoundGear();
+                    model.addGear(g);
+                    // add new sliders here
+                    if (model.getNumGears() == 5) {
+                        addGearButton.setText("You are at the maximum number of gears");
+                        
+                        radSlider4 = new JSlider(RAD_MIN, RAD_MAX, (int) model.getNthGear(4).getRadius());
+                        radSlider4.setMajorTickSpacing(RAD_SPACING);
+                        radSlider4.setPaintLabels(true);
+                        radSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        radSlider4.setMaximumSize(new Dimension(370,30));
+                        radSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) radSlider4.getValue();
+                                model.getNthGear(4).radiusScale(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        radSliderText4 = new JLabel("Slide to change the radius");
+                        radSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        int INITIAL_ANG = (int) (model.getNthGear(4).getTooth().getAng()*180.0/Math.PI);
+                        toothAngSlider4 = new JSlider(ANG_MIN, ANG_MAX, INITIAL_ANG);
+                        toothAngSlider4.setMajorTickSpacing(ANG_SPACING);
+                        toothAngSlider4.setPaintLabels(true);
+                        toothAngSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothAngSlider4.setMaximumSize(new Dimension(370,30));
+                        toothAngSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double result = (double) toothAngSlider4.getValue();
+                                double ang = result*Math.PI/180.0;
+                                double len = model.getNthGear(4).getTooth().getLen();
+                                double rad = model.getNthGear(4).getRadius();
+                                double wid = ang*rad;
+                                model.getNthGear(4).getTooth().setAng(len, wid, ang);
+                                model.getNthGear(4).radiusScale(rad);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothAngSliderText4 = new JLabel("Slide to change the angle taken by each tooth (in degrees)");
+                        toothAngSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothAngSliderInfo4 = new JLabel("The angle of a tooth is inversely proportional to the number of teeth");
+                        toothAngSliderInfo4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothLenSlider4 = new JSlider(LEN_MIN, LEN_MAX, (int) model.getNthGear(4).getTooth().getLen());
+                        toothLenSlider4.setMajorTickSpacing(LEN_SPACING);
+                        toothLenSlider4.setPaintLabels(true);
+                        toothLenSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothLenSlider4.setMaximumSize(new Dimension(370,30));
+                        
+                        toothLenSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) toothLenSlider4.getValue();
+                                model.getNthGear(4).getTooth().setLen(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothLenSliderText4 = new JLabel("Slide to change the length of each tooth");
+                        toothLenSliderText4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        xPosSlider4 = new JSlider(X_MIN, X_MAX, (int) model.getNthGear(4).getX());
+                        xPosSlider4.setMajorTickSpacing(X_SPACING);
+                        xPosSlider4.setPaintLabels(true);
+                        xPosSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        xPosSlider4.setMaximumSize(new Dimension(370,30));
+                        
+                        xPosSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) xPosSlider4.getValue();
+                                model.getNthGear(4).setOrigin(val, model.getNthGear(4).getY());
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        xPosSliderLabel4 = new JLabel("Slide to change the X coordinate of the gear's center");
+                        xPosSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        // y slider
+                        yPosSlider4 = new JSlider(Y_MIN, Y_MAX, (int) model.getNthGear(4).getY());
+                        yPosSlider4.setMajorTickSpacing(Y_SPACING);
+                        yPosSlider4.setPaintLabels(true);
+                        yPosSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        yPosSlider4.setMaximumSize(new Dimension(370,30));
+                        
+                        yPosSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) yPosSlider4.getValue();
+                                model.getNthGear(4).setOrigin(model.getNthGear(4).getX(), val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        yPosSliderLabel4 = new JLabel("Slide to change the Y coordinate of the gear's center");
+                        yPosSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // rotation slider
+                        rotationSlider4 = new JSlider(ROT_MIN, ROT_MAX, 0);
+                        rotationSlider4.setMajorTickSpacing(ROT_SPACING);
+                        rotationSlider4.setPaintLabels(true);
+                        rotationSlider4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        rotationSlider4.setMaximumSize(new Dimension(370,30));
+                        
+                        rotationSlider4.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double)rotationSlider4.getValue();
+                                double result = val*Math.PI/180.0;
+                                renderingPanel.setRotation(result, 4);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        rotationSliderLabel4 = new JLabel("Slide to change the rotation of the gear");
+                        rotationSliderLabel4.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // colors
+                        radSliderText4.setForeground(Color.ORANGE);
+                        toothAngSliderText4.setForeground(Color.ORANGE);
+                        toothAngSliderInfo4.setForeground(Color.ORANGE);
+                        toothLenSliderText4.setForeground(Color.ORANGE);
+                        xPosSliderLabel4.setForeground(Color.ORANGE);
+                        yPosSliderLabel4.setForeground(Color.ORANGE);
+                        rotationSliderLabel4.setForeground(Color.ORANGE);
+                        
+                        // add to panel
+                        sliderPanel.add(radSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(radSliderText4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothAngSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothAngSliderText4);
+                        sliderPanel.add(toothAngSliderInfo4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothLenSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothLenSliderText4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(xPosSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(xPosSliderLabel4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(yPosSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(yPosSliderLabel4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(rotationSlider4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(rotationSliderLabel4);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.repaint();
+                    } else if (model.getNumGears() == 4) {
+                        radSlider3 = new JSlider(RAD_MIN, RAD_MAX, (int) model.getNthGear(3).getRadius());
+                        radSlider3.setMajorTickSpacing(RAD_SPACING);
+                        radSlider3.setPaintLabels(true);
+                        radSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        radSlider3.setMaximumSize(new Dimension(370,30));
+                        radSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) radSlider3.getValue();
+                                model.getNthGear(3).radiusScale(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        radSliderText3 = new JLabel("Slide to change the radius");
+                        radSliderText3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        int INITIAL_ANG = (int) (model.getNthGear(3).getTooth().getAng()*180.0/Math.PI);
+                        toothAngSlider3 = new JSlider(ANG_MIN, ANG_MAX, INITIAL_ANG);
+                        toothAngSlider3.setMajorTickSpacing(ANG_SPACING);
+                        toothAngSlider3.setPaintLabels(true);
+                        toothAngSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothAngSlider3.setMaximumSize(new Dimension(370,30));
+                        toothAngSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double result = (double) toothAngSlider3.getValue();
+                                double ang = result*Math.PI/180.0;
+                                double len = model.getNthGear(3).getTooth().getLen();
+                                double rad = model.getNthGear(3).getRadius();
+                                double wid = ang*rad;
+                                model.getNthGear(3).getTooth().setAng(len, wid, ang);
+                                model.getNthGear(3).radiusScale(rad);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothAngSliderText3 = new JLabel("Slide to change the angle taken by each tooth (in degrees)");
+                        toothAngSliderText3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothAngSliderInfo3 = new JLabel("The angle of a tooth is inversely proportional to the number of teeth");
+                        toothAngSliderInfo3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothLenSlider3 = new JSlider(LEN_MIN, LEN_MAX, (int) model.getNthGear(3).getTooth().getLen());
+                        toothLenSlider3.setMajorTickSpacing(LEN_SPACING);
+                        toothLenSlider3.setPaintLabels(true);
+                        toothLenSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothLenSlider3.setMaximumSize(new Dimension(370,30));
+                        
+                        toothLenSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) toothLenSlider3.getValue();
+                                model.getNthGear(3).getTooth().setLen(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothLenSliderText3 = new JLabel("Slide to change the length of each tooth");
+                        toothLenSliderText3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        xPosSlider3 = new JSlider(X_MIN, X_MAX, (int) model.getNthGear(3).getX());
+                        xPosSlider3.setMajorTickSpacing(X_SPACING);
+                        xPosSlider3.setPaintLabels(true);
+                        xPosSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        xPosSlider3.setMaximumSize(new Dimension(370,30));
+                        
+                        xPosSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) xPosSlider3.getValue();
+                                model.getNthGear(3).setOrigin(val, model.getNthGear(3).getY());
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        xPosSliderLabel3 = new JLabel("Slide to change the X coordinate of the gear's center");
+                        xPosSliderLabel3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        // y slider
+                        yPosSlider3 = new JSlider(Y_MIN, Y_MAX, (int) model.getNthGear(3).getY());
+                        yPosSlider3.setMajorTickSpacing(Y_SPACING);
+                        yPosSlider3.setPaintLabels(true);
+                        yPosSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        yPosSlider3.setMaximumSize(new Dimension(370,30));
+                        
+                        yPosSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) yPosSlider3.getValue();
+                                model.getNthGear(3).setOrigin(model.getNthGear(3).getX(), val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        yPosSliderLabel3 = new JLabel("Slide to change the Y coordinate of the gear's center");
+                        yPosSliderLabel3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // rotation slider
+                        rotationSlider3 = new JSlider(ROT_MIN, ROT_MAX, 0);
+                        rotationSlider3.setMajorTickSpacing(ROT_SPACING);
+                        rotationSlider3.setPaintLabels(true);
+                        rotationSlider3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        rotationSlider3.setMaximumSize(new Dimension(370,30));
+                        
+                        rotationSlider3.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double)rotationSlider3.getValue();
+                                double result = val*Math.PI/180.0;
+                                renderingPanel.setRotation(result, 3);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        rotationSliderLabel3 = new JLabel("Slide to change the rotation of the gear");
+                        rotationSliderLabel3.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // colors
+                        radSliderText3.setForeground(Color.GREEN);
+                        toothAngSliderText3.setForeground(Color.GREEN);
+                        toothAngSliderInfo3.setForeground(Color.GREEN);
+                        toothLenSliderText3.setForeground(Color.GREEN);
+                        xPosSliderLabel3.setForeground(Color.GREEN);
+                        yPosSliderLabel3.setForeground(Color.GREEN);
+                        rotationSliderLabel3.setForeground(Color.GREEN);
+                        
+                        // add to panel
+                        sliderPanel.add(radSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(radSliderText3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothAngSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothAngSliderText3);
+                        sliderPanel.add(toothAngSliderInfo3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothLenSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothLenSliderText3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(xPosSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(xPosSliderLabel3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(yPosSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(yPosSliderLabel3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(rotationSlider3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(rotationSliderLabel3);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.repaint();
+                        
+                    } else if (model.getNumGears() == 3) {
+                        radSlider2 = new JSlider(RAD_MIN, RAD_MAX, (int) model.getNthGear(2).getRadius());
+                        radSlider2.setMajorTickSpacing(RAD_SPACING);
+                        radSlider2.setPaintLabels(true);
+                        radSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        radSlider2.setMaximumSize(new Dimension(370,30));
+                        radSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) radSlider2.getValue();
+                                model.getNthGear(2).radiusScale(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        radSliderText2 = new JLabel("Slide to change the radius");
+                        radSliderText2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        int INITIAL_ANG = (int) (model.getNthGear(2).getTooth().getAng()*180.0/Math.PI);
+                        toothAngSlider2 = new JSlider(ANG_MIN, ANG_MAX, INITIAL_ANG);
+                        toothAngSlider2.setMajorTickSpacing(ANG_SPACING);
+                        toothAngSlider2.setPaintLabels(true);
+                        toothAngSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothAngSlider2.setMaximumSize(new Dimension(370,30));
+                        toothAngSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double result = (double) toothAngSlider2.getValue();
+                                double ang = result*Math.PI/180.0;
+                                double len = model.getNthGear(2).getTooth().getLen();
+                                double rad = model.getNthGear(2).getRadius();
+                                double wid = ang*rad;
+                                model.getNthGear(2).getTooth().setAng(len, wid, ang);
+                                model.getNthGear(2).radiusScale(rad);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothAngSliderText2 = new JLabel("Slide to change the angle taken by each tooth (in degrees)");
+                        toothAngSliderText2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothAngSliderInfo2 = new JLabel("The angle of a tooth is inversely proportional to the number of teeth");
+                        toothAngSliderInfo2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        toothLenSlider2 = new JSlider(LEN_MIN, LEN_MAX, (int) model.getNthGear(2).getTooth().getLen());
+                        toothLenSlider2.setMajorTickSpacing(LEN_SPACING);
+                        toothLenSlider2.setPaintLabels(true);
+                        toothLenSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        toothLenSlider2.setMaximumSize(new Dimension(370,30));
+                        
+                        toothLenSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) toothLenSlider2.getValue();
+                                model.getNthGear(2).getTooth().setLen(val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        toothLenSliderText2 = new JLabel("Slide to change the length of each tooth");
+                        toothLenSliderText2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        xPosSlider2 = new JSlider(X_MIN, X_MAX, (int) model.getNthGear(2).getX());
+                        xPosSlider2.setMajorTickSpacing(X_SPACING);
+                        xPosSlider2.setPaintLabels(true);
+                        xPosSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        xPosSlider2.setMaximumSize(new Dimension(370,30));
+                        
+                        xPosSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) xPosSlider2.getValue();
+                                model.getNthGear(2).setOrigin(val, model.getNthGear(2).getY());
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        xPosSliderLabel2 = new JLabel("Slide to change the X coordinate of the gear's center");
+                        xPosSliderLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        // y slider
+                        yPosSlider2 = new JSlider(Y_MIN, Y_MAX, (int) model.getNthGear(2).getY());
+                        yPosSlider2.setMajorTickSpacing(Y_SPACING);
+                        yPosSlider2.setPaintLabels(true);
+                        yPosSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        yPosSlider2.setMaximumSize(new Dimension(370,30));
+                        
+                        yPosSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double) yPosSlider2.getValue();
+                                model.getNthGear(2).setOrigin(model.getNthGear(2).getX(), val);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        yPosSliderLabel2 = new JLabel("Slide to change the Y coordinate of the gear's center");
+                        yPosSliderLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // rotation slider
+                        rotationSlider2 = new JSlider(ROT_MIN, ROT_MAX, 0);
+                        rotationSlider2.setMajorTickSpacing(ROT_SPACING);
+                        rotationSlider2.setPaintLabels(true);
+                        rotationSlider2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        rotationSlider2.setMaximumSize(new Dimension(370,30));
+                        
+                        rotationSlider2.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent event) {
+                                double val = (double)rotationSlider2.getValue();
+                                double result = val*Math.PI/180.0;
+                                renderingPanel.setRotation(result, 2);
+                                renderingPanel.repaint();
+                            }
+                        });
+                        
+                        rotationSliderLabel2 = new JLabel("Slide to change the rotation of the gear");
+                        rotationSliderLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        
+                        
+                        // colors
+                        radSliderText2.setForeground(Color.RED);
+                        toothAngSliderText2.setForeground(Color.RED);
+                        toothAngSliderInfo2.setForeground(Color.RED);
+                        toothLenSliderText2.setForeground(Color.RED);
+                        xPosSliderLabel2.setForeground(Color.RED);
+                        yPosSliderLabel2.setForeground(Color.RED);
+                        rotationSliderLabel2.setForeground(Color.RED);
+                        
+                        // add to panel
+                        sliderPanel.add(radSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(radSliderText2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothAngSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothAngSliderText2);
+                        sliderPanel.add(toothAngSliderInfo2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(toothLenSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(toothLenSliderText2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(xPosSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(xPosSliderLabel2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(yPosSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(yPosSliderLabel2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.add(rotationSlider2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+                        sliderPanel.add(rotationSliderLabel2);
+                        sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+                        sliderPanel.repaint();
+                    }
+                    
+                }
+                renderingPanel.repaint();
             }
         });
+        
+        
+        
         
         //////////////////////////////////////////////////////////////////////////////
         // end of basic components                                                  //
@@ -351,11 +875,11 @@ public class GUIWindow extends JPanel {
 
         // set up the slider panel with scroller
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
-        sliderPanel.setPreferredSize(new Dimension(400,1000));
-        sliderPanel.setMaximumSize(new Dimension(400,2000));
+        sliderPanel.setPreferredSize(new Dimension(400,2500));
+        sliderPanel.setMaximumSize(new Dimension(400,2500));
         sliderPanel.setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.blue));
-        scrollPane.setPreferredSize(new Dimension(450,400));
-        scrollPane.setMaximumSize(new Dimension(450,800));
+        scrollPane.setPreferredSize(new Dimension(450,2500));
+        scrollPane.setMaximumSize(new Dimension(450,2500));
         
         // add things to the slider panel
         scrollPane.setViewportView(sliderPanel);
@@ -368,6 +892,8 @@ public class GUIWindow extends JPanel {
         sliderPanel.add(userInput);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sliderPanel.add(fitToGear);
+        sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sliderPanel.add(addGearButton);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         sliderPanel.add(radSlider);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -395,6 +921,7 @@ public class GUIWindow extends JPanel {
         sliderPanel.add(rotationSliderLabel);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         
+        
         // set up the root panel
         add(gearPanel);
         add(scrollPane);        
@@ -406,12 +933,17 @@ class RenderPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     GearSet model;
     double scale;
-    double currentRotation;
+    double[] currentRotation;
     
     public RenderPanel(GearSet mo) {
         model = mo;
         scale = 5.0;
-        currentRotation = 0.0;
+        currentRotation = new double[5];
+        currentRotation[0] = 0.0;
+        currentRotation[1] = 0.0;
+        currentRotation[2] = 0.0;
+        currentRotation[3] = 0.0;
+        currentRotation[4] = 0.0;
     }
     
     // helps draw the splines
@@ -430,7 +962,7 @@ class RenderPanel extends JPanel {
         double rad = model.getFixedGear().getRadius();
         double ang = model.getFixedGear().getTooth().getAng();
         int numT = model.getFixedGear().getNumTeeth();
-        paintGear(g2, points, rad, ang, numT, xOff, yOff, false);
+        paintGear(g2, points, rad, ang, numT, xOff, yOff, 0);
         
         
         // draws the unfixed gear
@@ -441,18 +973,34 @@ class RenderPanel extends JPanel {
         double rad2 = model.getUnfixedGear().getRadius();
         double ang2 = model.getUnfixedGear().getTooth().getAng();
         int numT2 = model.getUnfixedGear().getNumTeeth();
-        //System.out.println("tooth width: " + model.getUnfixedGear().getTooth().getWidth());
-        //System.out.println("radius: " + rad2);
-        //System.out.println("angle per tooth: " + ang2*180.0/Math.PI);
-        //System.out.println("number of teeth: " + numT2);
-        paintGear(g2, points2, rad2, ang2, numT2, xOff2, yOff2, true);
+        paintGear(g2, points2, rad2, ang2, numT2, xOff2, yOff2, 1);
+        
+        
+        // deals with more than two gears in a set
+        if (model.getNumGears() > 2) {
+            ArrayList<Color> colors = new ArrayList<Color>(); 
+            colors.add(Color.RED);
+            colors.add(Color.GREEN);
+            colors.add(Color.ORANGE);
+            for (int j = 2; j < model.getNumGears(); j++) {
+                // TODO: watch rotations with this
+                g2.setColor(colors.get(j-2));
+                double[][] points3 = model.getNthGear(j).getTooth().getToothSpline().getPoints();
+                double xOff3 = model.getNthGear(j).getX();
+                double yOff3 = model.getNthGear(j).getY();
+                double rad3 = model.getNthGear(j).getRadius();
+                double ang3 = model.getNthGear(j).getTooth().getAng();
+                int numT3 = model.getNthGear(j).getNumTeeth();
+                paintGear(g2, points3, rad3, ang3, numT3, xOff3, yOff3, j);
+            }
+        }
     }
     
     /** Paints a gear given: 
     *   The current Graphics2D object
     *   The points list of the gear's Tooth
     */
-    public void paintGear(Graphics2D g2, double[][] points, double rad, double ang, int numT, double xOff, double yOff, boolean unfixed) {
+    public void paintGear(Graphics2D g2, double[][] points, double rad, double ang, int numT, double xOff, double yOff, int gear) {
         // creates the spline and its mirror
         CubicCurve2D.Double c = new CubicCurve2D.Double(
                 scale*points[0][0], scale*points[0][1] + scale*rad, 
@@ -465,9 +1013,8 @@ class RenderPanel extends JPanel {
                 -1.0*scale*points[2][0], scale*points[2][1] + scale*rad, 
                 -1.0*scale*points[3][0], scale*points[3][1] + scale*rad);
         g2.translate(scale*xOff, scale*yOff);
-        if (unfixed) {
-            g2.rotate(currentRotation);
-        }
+        g2.rotate(currentRotation[gear]);
+        
         g2.draw(c);
         g2.draw(cRef);
         
@@ -488,14 +1035,13 @@ class RenderPanel extends JPanel {
         
         // reset g2 to the original rotation and offset for future drawing
         g2.rotate(ang);
-        if (unfixed) {
-            g2.rotate(-1.0*currentRotation);
-        }
+        g2.rotate(-1.0*currentRotation[gear]);
+        
         g2.translate(-1.0*scale*xOff, -1.0*scale*yOff);
     }
     
     // sets any global rotations for the unfixed gear(s)
-    public void setRotation(double rot) {
-        currentRotation = rot;
+    public void setRotation(double rot, int gear) {
+        currentRotation[gear] = rot;
     }
 }

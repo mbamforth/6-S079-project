@@ -20,4 +20,13 @@ public abstract class Gear {
     
     // gets the radius if there is one
     public abstract double getRadius();
+    
+    // gets the x origin if there is one
+    public abstract double getX();
+    // gets the y origin if there is one
+    public abstract double getY();
+    // sets the origin
+    public abstract void setOrigin(double x, double y);
+    // sets the radius
+    public abstract void setRadius(double rad);
 }

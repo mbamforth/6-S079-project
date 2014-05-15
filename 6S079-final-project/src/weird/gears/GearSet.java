@@ -9,25 +9,13 @@ public class GearSet {
     // @set if 0: 2 round gears
     //      if 1:
     //      if 2:
-    public GearSet(int set) {
-        if (set == 0) {
-            Gear fixed = new RoundGear();
-            Tooth tooth = new Tooth(2.0, 2.0, .5);
-            Gear unfixed = new RoundGear(23.0, 0.0, 10.0, tooth);
-            gearList.add(fixed);
-            gearList.add(unfixed);
-        } else if (set == 1) {
-            Tooth tooth = new Tooth(15.0, 2.0, .5);
-            Tooth otherTooth = new Tooth(5.0, 1.0, .3);
-            Gear fixed = new RoundGear(0.0, 0.0, 10.0, otherTooth);
-            Gear unfixed = new RoundGear(0.0, 0.0, 25.0, tooth);
-            System.out.println("ac ");
-            System.out.println(otherTooth.getToothSpline() == tooth.getToothSpline());
-            gearList.add(fixed);
-            gearList.add(unfixed);
-        } else {
-            
-        }
+    public GearSet() {
+        Tooth tooth = new Tooth(4.0, 2.0, .5);
+        Tooth otherTooth = new Tooth(3.0, 1.0, .5);
+        Gear fixed = new RoundGear(30.0, 40.0, 10.0, otherTooth);
+        Gear unfixed = new RoundGear(100.0, 70.0, 25.0, tooth);
+        gearList.add(fixed);
+        gearList.add(unfixed);
     }
     
     public GearSet(Gear gear1, Gear gear2) {

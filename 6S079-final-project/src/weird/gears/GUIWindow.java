@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -13,19 +14,17 @@ import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.CubicCurve2D;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class GUIWindow extends JPanel {
     // necessary to avoid an error
@@ -33,6 +32,7 @@ public class GUIWindow extends JPanel {
     
     private GearSet model;
     private final JScrollPane scrollPane;
+    private final JButton fixedGearDialogueButton;
     private final JLabel weirdGearsLabel;
     private final JTextArea weirdGearsInfo;
     private final JSlider radSlider;
@@ -46,6 +46,17 @@ public class GUIWindow extends JPanel {
     private final JPanel sliderPanel;
     private final JPanel gearPanel;
     private final RenderPanel renderingPanel;
+    private final JTextField userInputRad;
+    private final JTextField userInputAng;
+    private final JTextField userInputLen;
+    private final JTextField userInputX;
+    private final JTextField userInputY;
+    private final JLabel userInputRadLabel;
+    private final JLabel userInputAngLabel;
+    private final JLabel userInputLenLabel;
+    private final JLabel userInputXLabel;
+    private final JLabel userInputYLabel;
+    private final JPanel userInput;
     
     static final int ANG_MIN = 2;
     static final int ANG_MAX = 90;
@@ -58,19 +69,76 @@ public class GUIWindow extends JPanel {
     static final int LEN_SPACING = 1;
 
     public GUIWindow() {
-        // sets up the model (0 is 2 circular uniform gears)
-        model = new GearSet(1);
+        // sets up the model
+        model = new GearSet();
         
         // create components
         scrollPane = new JScrollPane();
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
-        weirdGearsLabel = new JLabel("Welcome to Weird Gears!");
-        weirdGearsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // create user input section
+        userInput = new JPanel();
+        userInput.setLayout(new FlowLayout());
+        userInput.setPreferredSize(new Dimension(400,40));
+        userInput.setMaximumSize(new Dimension(400,40));
+        
+        userInputRadLabel = new JLabel("Radius:");
+        userInputRad = new JTextField("10.0");
+        userInputAngLabel = new JLabel("Angle:");
+        userInputAng = new JTextField("30.0");
+        userInputLenLabel = new JLabel("Tooth Length:");
+        userInputLen = new JTextField("3.0");
+        userInputXLabel = new JLabel("X:");
+        userInputX = new JTextField("30.0");
+        userInputYLabel = new JLabel("Y:");
+        userInputY = new JTextField("40.0");
+        
+        userInput.add(userInputRadLabel);
+        userInput.add(userInputRad);
+        userInput.add(userInputAngLabel);
+        userInput.add(userInputAng);
+        userInput.add(userInputLenLabel);
+        userInput.add(userInputLen);
+        userInput.add(userInputXLabel);
+        userInput.add(userInputX);
+        userInput.add(userInputYLabel);
+        userInput.add(userInputY);
+        userInput.setVisible(false);
+        
+        fixedGearDialogueButton = new JButton("Enter your parameters for the fixed gear");
+        fixedGearDialogueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        fixedGearDialogueButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //set dialogue visible
+                if(userInput.isVisible()) {
+                    userInput.setVisible(false);
+                    double rad = Double.parseDouble(userInputRad.getText());
+                    double ang = Double.parseDouble(userInputAng.getText());
+                    ang = ang*Math.PI/180.0;
+                    double len = Double.parseDouble(userInputLen.getText());
+                    double x = Double.parseDouble(userInputX.getText());
+                    double y = Double.parseDouble(userInputY.getText());
+                    model.getFixedGear().setOrigin(x, y);
+                    double wid = rad*ang;
+                    model.getFixedGear().getTooth().setAng(len, wid, ang);
+                    model.getFixedGear().radiusScale(rad);
+                    renderingPanel.repaint();
+                    fixedGearDialogueButton.setText("Enter your parameters for the fixed gear");
+                } else {
+                    userInput.setVisible(true);
+                    fixedGearDialogueButton.setText("Click here again to confirm parameters");
+                }
+            }
+        });
         
         weirdGearsInfo = new JTextArea("Weird Gears is a program which will simulate sets of gears based "
-                + "on parameters passed by you, the user. Feel free to adjust the displayed gears with the sliders below.");
+                + "on parameters passed by you, the user. "
+                + "The black gear is fixed by the parameters you gave. Press the button below"
+                + " to change the fixed gear's parameters."
+                + "\n\nFeel free to adjust the colorful gears with the corresponding sliders below. "
+                + "Alternatively, press the 'Fit to Fixed Gear' button to fit the colorful gears to "
+                + "the fixed gear.");
         weirdGearsInfo.setAlignmentX(Component.CENTER_ALIGNMENT);
         weirdGearsInfo.setEditable(false);
         weirdGearsInfo.setCursor(null);
@@ -78,7 +146,10 @@ public class GUIWindow extends JPanel {
         weirdGearsInfo.setFocusable(false);
         weirdGearsInfo.setWrapStyleWord(true);
         weirdGearsInfo.setLineWrap(true);
-        weirdGearsInfo.setMaximumSize(new Dimension(370,80));
+        weirdGearsInfo.setMaximumSize(new Dimension(370,130));
+        
+        weirdGearsLabel = new JLabel("Welcome to Weird Gears!");
+        weirdGearsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         radSlider = new JSlider(RAD_MIN, RAD_MAX, (int) model.getUnfixedGear().getRadius());
         radSlider.setMajorTickSpacing(RAD_SPACING);
@@ -109,8 +180,13 @@ public class GUIWindow extends JPanel {
             public void stateChanged(ChangeEvent event) {
                 // print some things here to see if it is working
                 double result = (double) radSlider.getValue();
-                double val = result*Math.PI/180.0;
-                model.getUnfixedGear().toothScale(val);
+                double ang = result*Math.PI/180.0;
+                double len = model.getUnfixedGear().getTooth().getLen();
+                double rad = model.getUnfixedGear().getRadius();
+                double wid = ang*rad;
+                // TODO: sometime wrong here
+                model.getUnfixedGear().getTooth().setAng(len, wid, ang);
+                model.getUnfixedGear().radiusScale(rad);
                 renderingPanel.repaint();
             }
         });
@@ -146,7 +222,7 @@ public class GUIWindow extends JPanel {
         
         // lays out the main panel
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        setPreferredSize(new Dimension(950,400));
+        setPreferredSize(new Dimension(1250,600));
         setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.white));
         
         // set up rendering panel 
@@ -179,6 +255,9 @@ public class GUIWindow extends JPanel {
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sliderPanel.add(weirdGearsInfo);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        sliderPanel.add(fixedGearDialogueButton);
+        sliderPanel.add(userInput);
+        sliderPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sliderPanel.add(radSlider);
         sliderPanel.add(Box.createRigidArea(new Dimension(0, 8)));
         sliderPanel.add(radSliderText);
@@ -224,8 +303,8 @@ class RenderPanel extends JPanel {
         
         // draws the fixed gear
         double[][] points = model.getFixedGear().getTooth().getToothSpline().getPoints();
-        double xOff = 150.0;
-        double yOff = 200.0;
+        double xOff = model.getFixedGear().getX();
+        double yOff = model.getFixedGear().getY();
         double rad = model.getFixedGear().getRadius();
         double ang = model.getFixedGear().getTooth().getAng();
         int numT = model.getFixedGear().getNumTeeth();
@@ -235,8 +314,8 @@ class RenderPanel extends JPanel {
         // draws the unfixed gear
         g2.setColor(Color.BLUE);
         double[][] points2 = model.getUnfixedGear().getTooth().getToothSpline().getPoints();
-        double xOff2 = 300.0;
-        double yOff2 = 200.0;
+        double xOff2 = model.getUnfixedGear().getX();
+        double yOff2 = model.getUnfixedGear().getY();
         double rad2 = model.getUnfixedGear().getRadius();
         double ang2 = model.getUnfixedGear().getTooth().getAng();
         int numT2 = model.getUnfixedGear().getNumTeeth();
@@ -244,7 +323,6 @@ class RenderPanel extends JPanel {
         //System.out.println("radius: " + rad2);
         //System.out.println("angle per tooth: " + ang2*180.0/Math.PI);
         //System.out.println("number of teeth: " + numT2);
-        System.out.println(points == points2);
         paintGear(g2, points2, rad2, ang2, numT2, xOff2, yOff2);
 
     }
@@ -265,7 +343,7 @@ class RenderPanel extends JPanel {
                 -1.0*scale*points[1][0], scale*points[1][1] + scale*rad, 
                 -1.0*scale*points[2][0], scale*points[2][1] + scale*rad, 
                 -1.0*scale*points[3][0], scale*points[3][1] + scale*rad);
-        g2.translate(xOff, yOff);
+        g2.translate(scale*xOff, scale*yOff);
         g2.draw(c);
         g2.draw(cRef);
         
@@ -281,6 +359,6 @@ class RenderPanel extends JPanel {
             g2.draw(cRef);
         }
         g2.rotate(ang);
-        g2.translate(-xOff, -yOff);
+        g2.translate(-1.0*scale*xOff, -1.0*scale*yOff);
     }
 }

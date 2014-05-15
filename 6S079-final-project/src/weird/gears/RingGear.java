@@ -44,6 +44,18 @@ public class RingGear extends Gear {
         return innerTooth;
     }   
     
+    // Gets the x
+    @Override
+    public double getX() {
+        return originX;
+    }  
+    
+    // Gets the y
+    @Override
+    public double getY() {
+        return originY;
+    }  
+    
     // Gets the tooth
     @Override
     public double getRadius() {
@@ -87,5 +99,17 @@ public class RingGear extends Gear {
     public int getNumTeeth() {
         // TODO Auto-generated method stub
         return 0;
+    }
+
+    @Override
+    public void setOrigin(double x, double y) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setRadius(double rad) {
+        // TODO Auto-generated method stub
+        
     }
 }

@@ -73,6 +73,18 @@ public class RoundGear extends Gear {
         return radius;
     }  
     
+    // Gets the x
+    @Override
+    public double getX() {
+        return originX;
+    }  
+    
+    // Gets the y
+    @Override
+    public double getY() {
+        return originY;
+    }  
+    
     // returns the number of teeth
     public int getNumTeeth() {
         return numTeeth;

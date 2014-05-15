@@ -31,4 +31,6 @@ public abstract class Gear {
     public abstract void setOrigin(double x, double y);
     // sets the radius
     public abstract void setRadius(double rad);
+    // sets the thickness
+    public abstract void setThickness(double t);
 }

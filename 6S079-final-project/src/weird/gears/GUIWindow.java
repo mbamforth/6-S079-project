@@ -1010,6 +1010,14 @@ public class GUIWindow extends JPanel {
                     thicknessSlider5.setAlignmentX(Component.CENTER_ALIGNMENT);
                     thicknessSlider5.setMaximumSize(new Dimension(370,30));
                     
+                    thicknessSlider5.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent event) {
+                            double val = (double)thicknessSlider5.getValue();
+                            model.getNthGear(n).setThickness(val);
+                            renderingPanel.repaint();
+                        }
+                    });
+                    
                     thicknessSliderLabel5 = new JLabel("Slide to change the thickness of the ring");
                     thicknessSliderLabel5.setAlignmentX(Component.CENTER_ALIGNMENT);
                         

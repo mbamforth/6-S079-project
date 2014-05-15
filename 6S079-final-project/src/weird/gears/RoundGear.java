@@ -119,5 +119,10 @@ public class RoundGear extends Gear {
     @Override
     public double getThickness() {
         return 0.0;
+    }
+
+    @Override
+    public void setThickness(double t) {
+                
     } 
 }
